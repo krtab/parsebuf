@@ -1,0 +1,10 @@
+[package]
+name = "parsebuf"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+stable_string_patterns_method = { path = "../stable_string_patterns_method/stable_string_patterns_method"}
+
+[features]
+use-unsafe = []
