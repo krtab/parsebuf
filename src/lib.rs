@@ -375,12 +375,24 @@ impl<'a> ParseCursor<'a> {
         self
     }
 
-    pub fn step(self, mut f: impl FnMut(&mut Self) -> Result<&mut Self,Failed>) -> impl Iterator<Item = &'a str> {
+    pub fn step(
+        &mut self,
+        mut f: impl FnMut(&mut Self) -> Result<&mut Self, Failed>,
+    ) -> Result<&'a str, Failed> {
+        let mut candidate = self.clone();
+        f(&mut candidate)?;
+        *self = candidate;
+        Ok(self.cursor())
+    }
+
+    pub fn iter_steps(
+        self,
+        mut f: impl FnMut(&mut Self) -> Result<&mut Self, Failed>,
+    ) -> impl Iterator<Item = &'a str> {
         let mut state = self;
         std::iter::from_fn(move || {
             state.back_to_front();
-            f(&mut state).ok()?;
-            Some(state.cursor())
+            state.step(&mut f).ok()
         })
     }
 }

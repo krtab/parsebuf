@@ -9,7 +9,6 @@ struct ErrorLog<'a> {
     loc: Option<(u64, u64)>,
 }
 
-
 fn parse(input: &'_ str) -> Option<ErrorLog<'_>> {
     let mut cursor = ParseCursor::new_empty_start(input);
 
@@ -21,7 +20,7 @@ fn parse(input: &'_ str) -> Option<ErrorLog<'_>> {
     let msg = cursor.cursor().trim();
     cursor.back_to_front();
 
-    let mut parens = cursor.step(|c| {
+    let mut parens = cursor.iter_steps(|c| {
         c.back_forward('(', Loc::FirstIncluded, Strat::WholeData)?;
         c.front_forward(')', Loc::FirstExcluded)
     });
@@ -40,10 +39,10 @@ fn parse(input: &'_ str) -> Option<ErrorLog<'_>> {
     let hint;
     if first_par.starts_with('/') {
         let mut first_par = ParseCursor::new_empty_start(first_par);
-        first_par
-            .front_forward(WhiteSpace, Loc::FirstExcluded)
+        let file_val = first_par
+            .step(|c| c.front_forward(WhiteSpace, Loc::FirstExcluded))
             .unwrap();
-        file = Some(first_par.cursor());
+        file = Some(file_val);
         let parse_num_prefix = |c: &mut ParseCursor, pref| {
             c.back_forward(pref, Loc::FirstIncluded, Strat::WholeData)
                 .unwrap()
